@@ -1,1 +1,6 @@
 *~
+*.class
+uploader/config/database.yml
+uploader/log/*.log
+Uploader.jar
+libs/Uploader.jar
