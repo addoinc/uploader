@@ -54,7 +54,6 @@ public class Uploader extends JApplet implements ActionListener {
     
     public void actionPerformed(ActionEvent e) {
 	if (e.getSource().equals(btn_load)) {
-	    String content = readFile(file_name.getText());
 	    try {
 		postContentToServer( file_name.getText() );
 	    } catch(java.io.IOException ioe) {
@@ -63,28 +62,9 @@ public class Uploader extends JApplet implements ActionListener {
 	}
     }
     
-    private String readFile(String name) {
-	String line, content = "";
-	try {
-	    FileInputStream stream  =  new FileInputStream(name);
-	    BufferedReader reader = new BufferedReader(
-		new InputStreamReader(stream)
-            );
-	    while ((line = reader.readLine()) != null) {  
-		content += line;
-	    }
-	} catch (Exception e) {
-	    // Is the applet signed? || Was the file even present?
-	    content = "";
-	    e.printStackTrace();
-	}
-	return content;
-    }
-    
     private boolean postContentToServer(String name) throws java.io.IOException {
-	System.out.println( readFile(name) );
 	HttpClient httpclient = new DefaultHttpClient();
-	HttpPost httppost = new HttpPost("http://localhost:3000/uploader/upload");
+	HttpPost httppost = new HttpPost("http://10.0.0.40:3000/uploader/upload");
         FileBody payload = new FileBody(new File(name));
 	MultipartEntity reqEntity = new MultipartEntity();
 	
