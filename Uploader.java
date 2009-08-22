@@ -3,11 +3,8 @@ import java.io.FileInputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import java.awt.*;
-import java.awt.event.*;
 import java.applet.*;
-import javax.swing.*;
-import javax.swing.border.*;
+import java.awt.*;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -18,53 +15,40 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-public class Uploader extends JApplet implements ActionListener {
-
+public class Uploader extends Applet {
+    
     static {
-	System.load("/tmp/libwowpathlib.so");
+	System.load("c:\\code\\zugslist_jni.dll");
     }
     public native String getWoWPath();
-
-    private JPanel pane = null;
-    private JTextField file_name = null;
-    private JButton btn_load = null;
+    private Label message;
     
     public void init() {
 	try {
-	    initalizeUI();
-	} catch(Exception e) {
-	    e.printStackTrace();
-	}
-    }
-    
-    private void initalizeUI() throws Exception {
-	pane = new JPanel();
-	pane.setBounds(new Rectangle(0, 0, 500, 35));
-	pane.setLayout(null);
-	pane.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-	pane.setBackground(new Color(221, 194, 219));
-	
-	file_name = new JTextField();
-	file_name.setText("");
-	file_name.setBounds(new Rectangle(16, 23, 206, 29));
-	
-	btn_load = new JButton();
-	btn_load.setBounds(new Rectangle(231, 23, 80, 30));
-	btn_load.setText("Upload");
-	btn_load.addActionListener(this);
-	
-	pane.add(file_name);
-	pane.add(btn_load);
-	setContentPane(pane);
-    }
-    
-    public void actionPerformed(ActionEvent e) {
-	if (e.getSource().equals(btn_load)) {
-	    try {
-		postContentToServer( file_name.getText() );
-	    } catch(java.io.IOException ioe) {
-		ioe.printStackTrace();
+	    String wow_install_path = getWoWPath();
+	    String account_name = getParameter("wowid");
+	    
+	    message = new Label();
+	    
+	    setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+	    add(message);	    
+	    
+	    if( wow_install_path.length() != 0 ) {
+		String upload_file_path = wow_install_path + File.separator +
+		    "WTF" + File.separator + "Account" + File.separator +
+		    account_name + File.separator + "SavedVariables" +
+		    File.separator + "zugslist.lua";
+		if( new File( upload_file_path ).exists() ) {
+		    postContentToServer( upload_file_path );
+		} else {
+		    message.setText( "Zugslist addon file was not found!" );
+		    System.err.println( upload_file_path );
+		}
+	    } else {
+		message.setText( "World of warcraft installtion dir not found!" );
 	    }
+	} catch(java.io.IOException ioe) {
+	    ioe.printStackTrace();
 	}
     }
     
@@ -74,14 +58,14 @@ public class Uploader extends JApplet implements ActionListener {
         FileBody payload = new FileBody(new File(name));
 	MultipartEntity reqEntity = new MultipartEntity();
 	
-	System.err.println( getWoWPath() );
-	
 	reqEntity.addPart("payload", payload);
 	httppost.setEntity(reqEntity);
 	
 	HttpResponse response = httpclient.execute(httppost);
         HttpEntity resEntity = response.getEntity();
 	
-	return false;
+	message.setText( "TradeLinks file uploaded to server!" );
+	
+	return true;
     }
 }
