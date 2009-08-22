@@ -19,6 +19,12 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 public class Uploader extends JApplet implements ActionListener {
+
+    static {
+	System.load("/tmp/libwowpathlib.so");
+    }
+    public native String getWoWPath();
+
     private JPanel pane = null;
     private JTextField file_name = null;
     private JButton btn_load = null;
@@ -67,6 +73,8 @@ public class Uploader extends JApplet implements ActionListener {
 	HttpPost httppost = new HttpPost("http://10.0.0.40:3000/uploader/upload");
         FileBody payload = new FileBody(new File(name));
 	MultipartEntity reqEntity = new MultipartEntity();
+	
+	System.err.println( getWoWPath() );
 	
 	reqEntity.addPart("payload", payload);
 	httppost.setEntity(reqEntity);
