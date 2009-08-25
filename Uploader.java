@@ -1,3 +1,5 @@
+import java.util.*;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
@@ -18,31 +20,50 @@ import org.apache.http.impl.client.DefaultHttpClient;
 public class Uploader extends Applet {
     
     static {
-	System.load("c:\\code\\zugslist_jni.dll");
+	if ( System.getProperty("os.name").toLowerCase().matches("windows") ) {
+	    System.load("c:\\code\\zugslist_jni.dll");
+	}
     }
     public native String getWoWPath();
     private Label message;
     
     public void init() {
 	try {
-	    String wow_install_path = getWoWPath();
+	    String wow_install_path = osSpecificWoWDir();
 	    String account_name = getParameter("wowid");
+	    String accounts_dir = "WTF" + File.separator + "Account";
 	    
 	    message = new Label();
 	    
 	    setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-	    add(message);	    
+	    add(message);
 	    
 	    if( wow_install_path.length() != 0 ) {
-		String upload_file_path = wow_install_path + File.separator +
-		    "WTF" + File.separator + "Account" + File.separator +
-		    account_name + File.separator + "SavedVariables" +
-		    File.separator + "zugslist.lua";
-		if( new File( upload_file_path ).exists() ) {
-		    postContentToServer( upload_file_path );
+		
+		String upload_file_path;
+		
+		if ( account_name != null && account_name.length() != 0 ) {
+		    
+		    upload_file_path = wow_install_path + File.separator +
+			"WTF" + File.separator + "Account" + File.separator +
+			account_name + File.separator + "SavedVariables" +
+			File.separator + "zugslist.lua";
+
+		    if( new File( upload_file_path ).exists() ) {
+			postContentToServer( upload_file_path );
+		    } else {
+			message.setText( "Zugslist addon file was not found!" );
+			System.err.println( upload_file_path );
+		    }
+		    
 		} else {
-		    message.setText( "Zugslist addon file was not found!" );
-		    System.err.println( upload_file_path );
+		    ArrayList<String> files_to_upload = findTradeLinksFiles(
+			wow_install_path + File.separator + accounts_dir
+		    );
+		    for(String file_to_upload : files_to_upload) {
+			System.err.println( file_to_upload );
+			postContentToServer( file_to_upload );
+		    }
 		}
 	    } else {
 		message.setText( "World of warcraft installtion dir not found!" );
@@ -50,6 +71,43 @@ public class Uploader extends Applet {
 	} catch(java.io.IOException ioe) {
 	    ioe.printStackTrace();
 	}
+    }
+    
+    private String osSpecificWoWDir() {
+	String os_name = System.getProperty("os.name");
+	String wow_install_path = "";
+	
+	if ( os_name.toLowerCase().matches("windows") ) {
+	    wow_install_path = getWoWPath();
+	} else if( os_name.toLowerCase().matches("mac") ) {
+	    wow_install_path = "/Applications/World of Warcraft";
+	} else if ( os_name.toLowerCase().matches("linux") ) {
+	    wow_install_path = System.getProperty("user.home") +
+		"/.wine/drive_c/Program Files/World of Warcraft";
+	}
+	return wow_install_path;
+    }
+    
+    private ArrayList<String> findTradeLinksFiles( String dir ) {
+	File path = new File( dir );
+	ArrayList<String> files_to_upload = new ArrayList<String>();
+	if( path.exists() ) {
+	    String[] listing = path.list();
+	    for(String item : listing) {
+		File item_file = new File( dir + File.separator + item );
+		if( item_file.isFile() == true && item.toLowerCase().matches("zugslist.lua") ) {
+		    files_to_upload.add( dir + File.separator + item );
+		} else if( item_file.isDirectory() == true ) {
+		    files_to_upload.addAll(
+			files_to_upload.size(),
+			findTradeLinksFiles( dir + File.separator + item )
+		    );
+		}
+	    }
+	} else {
+	    return files_to_upload;
+	}
+	return files_to_upload;
     }
     
     private boolean postContentToServer(String name) throws java.io.IOException {
