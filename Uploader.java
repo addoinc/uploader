@@ -22,7 +22,6 @@ public class Uploader extends Applet {
     static {
 	if ( System.getProperty("os.name").toLowerCase().matches("windows.*") ) {
 	    System.load("c:\\code\\zugslist_jni.dll");
-	    System.err.println("DLL Loaded.");
 	}
     }
     public native String getWoWPath();
@@ -54,7 +53,6 @@ public class Uploader extends Applet {
 			postContentToServer( upload_file_path );
 		    } else {
 			message.setText( "Zugslist addon file was not found!" );
-			System.err.println( upload_file_path );
 		    }
 		} else {
 		    ArrayList<String> files_to_upload = findTradeLinksFiles(
@@ -73,10 +71,8 @@ public class Uploader extends Applet {
     private String osSpecificWoWDir() {
 	String os_name = System.getProperty("os.name");
 	String wow_install_path = "";
-	System.err.println( wow_install_path + " : " + os_name );
 	if ( os_name.toLowerCase().matches("windows.*") ) {
 	    wow_install_path = getWoWPath();
-	    System.err.println( wow_install_path + " : " + os_name );
 	} else if( os_name.toLowerCase().matches("mac.*") ) {
 	    wow_install_path = "/Applications/World of Warcraft";
 	} else if ( os_name.toLowerCase().matches("linux") ) {
@@ -94,7 +90,7 @@ public class Uploader extends Applet {
 	    for(String item : listing) {
 		File item_file = new File( dir + File.separator + item );
 		//if( item_file.isFile() == true && item.toLowerCase().matches("zugslist.lua") ) {
-		if( item_file.isFile() == true && item.toLowerCase().matches("Blizzard_CombatLog.lua") ) {
+		if( item_file.isFile() == true && item.toLowerCase().matches("blizzard_combatlog.lua") ) {
 		    files_to_upload.add( dir + File.separator + item );
 		} else if( item_file.isDirectory() == true ) {
 		    files_to_upload.addAll(
