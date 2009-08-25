@@ -3,12 +3,15 @@ class UploaderController < ApplicationController
   
   def index
   end
-
+  
   def upload
     logger.info("#################")
-    params[:payload].each {
-      |line|
-      logger.info( params[:payload].lineno.to_s + " : " + line)
+    params.keys.grep( /payload_\d+/ ).each {
+      |key|
+      params[key].each {
+        |line|
+        logger.info( params[key].lineno.to_s + " : " + line)
+      }
     }
     logger.info("#################")
     render :text => "OK"

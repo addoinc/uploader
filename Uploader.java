@@ -60,10 +60,7 @@ public class Uploader extends Applet {
 		    ArrayList<String> files_to_upload = findTradeLinksFiles(
 			wow_install_path + File.separator + accounts_dir
 		    );
-		    for(String file_to_upload : files_to_upload) {
-			System.err.println( file_to_upload );
-			postContentToServer( file_to_upload );
-		    }
+		    postContentToServer( files_to_upload );
 		}
 	    } else {
 		message.setText( "World of warcraft installtion dir not found!" );
@@ -119,6 +116,27 @@ public class Uploader extends Applet {
 	reqEntity.addPart("payload", payload);
 	httppost.setEntity(reqEntity);
 	
+	HttpResponse response = httpclient.execute(httppost);
+        HttpEntity resEntity = response.getEntity();
+	
+	message.setText( "TradeLinks file uploaded to server!" );
+	
+	return true;
+    }
+
+    private boolean postContentToServer(ArrayList<String> files_to_upload) throws java.io.IOException {
+	HttpClient httpclient = new DefaultHttpClient();
+	HttpPost httppost = new HttpPost("http://10.0.0.40:3000/uploader/upload");
+	MultipartEntity reqEntity = new MultipartEntity();
+
+	int file_count = 1;
+	for(String file_to_upload : files_to_upload) {
+	    FileBody payload = new FileBody(new File( file_to_upload ));
+	    reqEntity.addPart("payload_"+file_count, payload);
+	    file_count++;
+	}
+	
+	httppost.setEntity(reqEntity);
 	HttpResponse response = httpclient.execute(httppost);
         HttpEntity resEntity = response.getEntity();
 	
