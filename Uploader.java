@@ -20,8 +20,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 public class Uploader extends Applet {
     
     static {
-	if ( System.getProperty("os.name").toLowerCase().matches("windows") ) {
+	if ( System.getProperty("os.name").toLowerCase().matches("windows.*") ) {
 	    System.load("c:\\code\\zugslist_jni.dll");
+	    System.err.println("DLL Loaded.");
 	}
     }
     public native String getWoWPath();
@@ -47,7 +48,7 @@ public class Uploader extends Applet {
 		    upload_file_path = wow_install_path + File.separator +
 			"WTF" + File.separator + "Account" + File.separator +
 			account_name + File.separator + "SavedVariables" +
-			File.separator + "zugslist.lua";
+			File.separator + "Blizzard_CombatLog.lua"; // "zugslist.lua";
 
 		    if( new File( upload_file_path ).exists() ) {
 			postContentToServer( upload_file_path );
@@ -55,7 +56,6 @@ public class Uploader extends Applet {
 			message.setText( "Zugslist addon file was not found!" );
 			System.err.println( upload_file_path );
 		    }
-		    
 		} else {
 		    ArrayList<String> files_to_upload = findTradeLinksFiles(
 			wow_install_path + File.separator + accounts_dir
@@ -73,10 +73,11 @@ public class Uploader extends Applet {
     private String osSpecificWoWDir() {
 	String os_name = System.getProperty("os.name");
 	String wow_install_path = "";
-	
-	if ( os_name.toLowerCase().matches("windows") ) {
+	System.err.println( wow_install_path + " : " + os_name );
+	if ( os_name.toLowerCase().matches("windows.*") ) {
 	    wow_install_path = getWoWPath();
-	} else if( os_name.toLowerCase().matches("mac") ) {
+	    System.err.println( wow_install_path + " : " + os_name );
+	} else if( os_name.toLowerCase().matches("mac.*") ) {
 	    wow_install_path = "/Applications/World of Warcraft";
 	} else if ( os_name.toLowerCase().matches("linux") ) {
 	    wow_install_path = System.getProperty("user.home") +
@@ -92,7 +93,8 @@ public class Uploader extends Applet {
 	    String[] listing = path.list();
 	    for(String item : listing) {
 		File item_file = new File( dir + File.separator + item );
-		if( item_file.isFile() == true && item.toLowerCase().matches("zugslist.lua") ) {
+		//if( item_file.isFile() == true && item.toLowerCase().matches("zugslist.lua") ) {
+		if( item_file.isFile() == true && item.toLowerCase().matches("Blizzard_CombatLog.lua") ) {
 		    files_to_upload.add( dir + File.separator + item );
 		} else if( item_file.isDirectory() == true ) {
 		    files_to_upload.addAll(
@@ -128,6 +130,11 @@ public class Uploader extends Applet {
 	HttpClient httpclient = new DefaultHttpClient();
 	HttpPost httppost = new HttpPost("http://10.0.0.40:3000/uploader/upload");
 	MultipartEntity reqEntity = new MultipartEntity();
+	
+	if( files_to_upload.size() == 0 ) {
+	    message.setText( "No files for upload found!" );
+	    return false;
+	}
 
 	int file_count = 1;
 	for(String file_to_upload : files_to_upload) {
