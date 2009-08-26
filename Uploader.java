@@ -47,7 +47,7 @@ public class Uploader extends Applet {
 		    upload_file_path = wow_install_path + File.separator +
 			"WTF" + File.separator + "Account" + File.separator +
 			account_name + File.separator + "SavedVariables" +
-			File.separator + "Blizzard_CombatLog.lua"; // "zugslist.lua";
+			File.separator + "GnomishYellowPages.lua"; // "zugslist.lua";
 
 		    if( new File( upload_file_path ).exists() ) {
 			postContentToServer( upload_file_path );
@@ -90,7 +90,7 @@ public class Uploader extends Applet {
 	    for(String item : listing) {
 		File item_file = new File( dir + File.separator + item );
 		//if( item_file.isFile() == true && item.toLowerCase().matches("zugslist.lua") ) {
-		if( item_file.isFile() == true && item.toLowerCase().matches("blizzard_combatlog.lua") ) {
+		if( item_file.isFile() == true && item.toLowerCase().matches("gnomishyellowpages.lua") ) {
 		    files_to_upload.add( dir + File.separator + item );
 		} else if( item_file.isDirectory() == true ) {
 		    files_to_upload.addAll(
