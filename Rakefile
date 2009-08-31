@@ -21,6 +21,7 @@ end
 task :sign => :jar do
   sh %{#{java_home}/bin/jarsigner Uploader.jar Uploader}
   sh %{cp Uploader.jar libs/}
+  sh %{mkdir -p uploader/public/libs/}
   sh %{cp Uploader.jar uploader/public/libs/Uploader.jar}
 end
 
@@ -37,6 +38,7 @@ task :sign_all do
 end
 
 task :deploy_all_jars do
+  sh %{mkdir -p uploader/public/libs/}
   [
    "apache-mime4j-0.6.jar", "commons-codec-1.3.jar",
    "commons-logging-1.1.1.jar", "httpclient-4.0.jar",
@@ -44,7 +46,7 @@ task :deploy_all_jars do
    "jcip-annotations.jar", "Uploader.jar"
   ].each {
     |jar_file|
-    sh %{rm uploader/public/libs/#{jar_file}}
+    sh %{rm -f uploader/public/libs/#{jar_file}}
     sh %{cp libs/#{jar_file} uploader/public/libs/#{jar_file}}
   }
 end

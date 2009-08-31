@@ -1,1 +1,20 @@
-A simple java applet to upload a file
+*) A simple java applet to upload a file
+
+*) When deploying for the first time:
+  export JAVA_HOME=/PATH/TO/jdk1.5.0_15      # IF REQUIRED
+  export PATH=/PATH/TO/jdk1.5.0_15/bin:$PATH # IF REQUIRED
+  rake keytool
+  rake clean
+  rake sign
+  rake sign_all
+  rake deploy_all_jars
+
+Finally, copy zugslist_jni.dll in to uploader/public/libs/
+This dll is avaiable in the zldll git repo and has the sum: 51473    15
+$ sum zugslist_jni.dll
+51473    15
+$
+
+*) For subsequent builds:
+  rake clean
+  rake sign
