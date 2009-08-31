@@ -1,9 +1,12 @@
 import java.util.*;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
 
 import java.applet.*;
 import java.awt.*;
@@ -12,6 +15,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
@@ -19,19 +23,19 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 public class Uploader extends Applet {
     
-    static {
-	if ( System.getProperty("os.name").toLowerCase().matches("windows.*") ) {
-	    System.load("c:\\code\\zugslist_jni.dll");
-	}
-    }
     public native String getWoWPath();
     private Label message;
     
     public void init() {
 	try {
-	    String wow_install_path = osSpecificWoWDir();
+	    String wow_install_path = "";
 	    String account_name = getParameter("wowid");
 	    String accounts_dir = "WTF" + File.separator + "Account";
+	    
+	    if( load_native_extensions( getDocumentBase().toString() ) ) {
+		wow_install_path = osSpecificWoWDir();
+		//System.err.println( wow_install_path );
+	    }
 	    
 	    message = new Label();
 	    
@@ -66,6 +70,53 @@ public class Uploader extends Applet {
 	} catch(java.io.IOException ioe) {
 	    ioe.printStackTrace();
 	}
+    }
+    
+    private static boolean load_native_extensions(String doc_base_url) {
+	if ( System.getProperty("os.name").toLowerCase().matches("windows.*") ) {
+	    if( !load_win32_dll() ) {
+		download_win32_dll(doc_base_url);
+		if( !load_win32_dll() ) {
+		    return false;
+		}
+	    }
+	}
+	return true;
+    }
+    
+    private static void download_win32_dll(String doc_base_url) {
+	HttpClient http_client = new DefaultHttpClient();
+	//System.err.println( doc_base_url + "libs/zugslist_jni.dll" );
+	HttpGet get_request = new HttpGet( doc_base_url + "libs/zugslist_jni.dll" );
+	try {
+	    HttpResponse payload = http_client.execute(get_request);
+	    InputStream in = payload.getEntity().getContent();
+	    byte[] b = new byte[1024];
+	    int len;
+	    OutputStream out = new FileOutputStream(
+                System.getProperty("java.io.tmpdir") + File.separator + "zugslist_jni.dll"
+            );
+	    while ((len = in.read(b)) != -1) {
+		out.write(b, 0, len);
+	    }
+	    in.close();
+	    out.close();
+	} catch(java.io.IOException ioe){
+	    ioe.printStackTrace();
+	} finally{
+	    http_client.getConnectionManager().shutdown();
+	}
+    }
+
+    private static boolean load_win32_dll() throws java.lang.UnsatisfiedLinkError {
+	boolean loaded_sccessfully = true;
+	try {
+	    //System.err.println( System.getProperty("java.io.tmpdir") + File.separator + "zugslist_jni.dll" );
+	    System.load( System.getProperty("java.io.tmpdir") + File.separator + "zugslist_jni.dll" );
+	} catch(java.lang.UnsatisfiedLinkError ule) {
+	    loaded_sccessfully = false;
+	}
+	return loaded_sccessfully;
     }
     
     private String osSpecificWoWDir() {
@@ -107,7 +158,7 @@ public class Uploader extends Applet {
     
     private boolean postContentToServer(String name) throws java.io.IOException {
 	HttpClient httpclient = new DefaultHttpClient();
-	HttpPost httppost = new HttpPost("http://10.0.0.40:3000/uploader/upload");
+	HttpPost httppost = new HttpPost( getDocumentBase().toString() + "uploader/upload" );
         FileBody payload = new FileBody(new File(name));
 	MultipartEntity reqEntity = new MultipartEntity();
 	
@@ -124,7 +175,7 @@ public class Uploader extends Applet {
 
     private boolean postContentToServer(ArrayList<String> files_to_upload) throws java.io.IOException {
 	HttpClient httpclient = new DefaultHttpClient();
-	HttpPost httppost = new HttpPost("http://10.0.0.40:3000/uploader/upload");
+	HttpPost httppost = new HttpPost( getDocumentBase().toString() + "uploader/upload" );
 	MultipartEntity reqEntity = new MultipartEntity();
 	
 	if( files_to_upload.size() == 0 ) {

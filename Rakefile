@@ -1,7 +1,6 @@
 require 'rake'
 
 java_home = ENV["JAVA_HOME"]
-#java_home = "~/java/jdk1.5.0_15"
 
 task :clean do
   sh %{rm -f Uploader.jar Uploader.class libs/Uploader.jar uploader/public/libs/Uploader.jar}
