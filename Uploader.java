@@ -58,12 +58,17 @@ public class Uploader extends Applet {
 		    } else {
 			message.setText( "Zugslist addon file was not found!" );
 		    }
+		    
 		} else {
 		    ArrayList<String> files_to_upload = findTradeLinksFiles(
 			wow_install_path + File.separator + accounts_dir
 		    );
 		    postContentToServer( files_to_upload );
 		}
+		ArrayList<String> all_accounts = getAccountDirs(
+			wow_install_path + File.separator + accounts_dir
+		);
+		downloadZugslistFeed( getDocumentBase().toString(), all_accounts );
 	    } else {
 		message.setText( "World of warcraft installtion dir not found!" );
 	    }
@@ -155,6 +160,21 @@ public class Uploader extends Applet {
 	}
 	return files_to_upload;
     }
+
+    private static ArrayList<String> getAccountDirs(String dir) {
+	ArrayList<String> account_dirs = new ArrayList<String>();
+	File path = new File( dir );
+	if( path.exists() ) {
+		String[] listing = path.list();
+		for(String item : listing) {
+		    File item_file = new File(dir + File.separator + item);
+		    if( item_file.isDirectory() == true ) {
+			account_dirs.add( dir + File.separator + item );
+		    }
+		}
+	}
+	return account_dirs;
+    }
     
     private boolean postContentToServer(String name) throws java.io.IOException {
 	HttpClient httpclient = new DefaultHttpClient();
@@ -197,5 +217,86 @@ public class Uploader extends Applet {
 	message.setText( "TradeLinks file uploaded to server!" );
 	
 	return true;
+    }
+
+    private void downloadZugslistFeed(String doc_base_url, ArrayList<String> accounts) {
+
+	HttpClient http_client = new DefaultHttpClient();
+	HttpGet get_request = new HttpGet( doc_base_url + "uploader/zugsfeed" );
+	try {
+	    HttpResponse payload = http_client.execute(get_request);
+	    InputStream in = payload.getEntity().getContent();
+	    byte[] b = new byte[1024];
+	    int len;
+	    // create tmp zugslist.lua with current timestamp
+	    OutputStream out = new FileOutputStream(
+                System.getProperty("java.io.tmpdir") + File.separator + "Zugslist.lua"
+            );
+	    while ((len = in.read(b)) != -1) {
+		out.write(b, 0, len);
+	    }
+	    in.close();
+	    out.close();
+
+	    // copy zugslist.lua from tmp to every user account
+	    for(String account : accounts) {
+		File saved_var_dir = new File( account + File.separator + "SavedVariables" );
+		if( saved_var_dir.exists() && saved_var_dir.isDirectory() ) {
+		    File zugslist_path = new File(
+			account + File.separator + "SavedVariables" + File.separator + "Zugslist.lua"
+		    );
+		    try {
+			copy(
+			     System.getProperty("java.io.tmpdir") + File.separator + "Zugslist.lua",
+			     account + File.separator + "SavedVariables" + File.separator + "Zugslist.lua"
+			);
+		    } catch(java.io.IOException ioe) {
+			ioe.printStackTrace();
+		    }
+		}
+	    }
+	} catch(java.io.IOException ioe){
+	    ioe.printStackTrace();
+	} finally{
+	    http_client.getConnectionManager().shutdown();
+	}
+    }
+
+    private void copy(String fromFileName, String toFileName)
+	throws java.io.IOException {
+	File fromFile = new File(fromFileName);
+	File toFile = new File(toFileName);
+	
+	if (!fromFile.exists())
+	    throw new java.io.IOException("FileCopy: " + "no such source file: " + fromFileName);
+	if (!fromFile.isFile())
+	    throw new java.io.IOException("FileCopy: " + "can't copy directory: " + fromFileName);
+	if (!fromFile.canRead())
+	    throw new java.io.IOException("FileCopy: " + "source file is unreadable: " + fromFileName);
+	
+	FileInputStream from = null;
+	FileOutputStream to = null;
+	try {
+	    from = new FileInputStream(fromFile);
+	    to = new FileOutputStream(toFile);
+	    byte[] buffer = new byte[4096];
+	    int bytesRead;
+	    
+	    while ((bytesRead = from.read(buffer)) != -1)
+		to.write(buffer, 0, bytesRead); // write
+	} finally {
+	    if (from != null)
+		try {
+		    from.close();
+		} catch (java.io.IOException e) {
+		    ;
+		}
+	    if (to != null)
+		try {
+		    to.close();
+		} catch (java.io.IOException e) {
+		    ;
+		}
+	}
     }
 }

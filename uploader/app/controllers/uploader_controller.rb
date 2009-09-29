@@ -16,5 +16,9 @@ class UploaderController < ApplicationController
     logger.info("#################")
     render :text => "OK"
   end
+
+  def zugsfeed
+    render :file => RAILS_ROOT + "/public/Zugslist.lua"
+  end
   
 end
