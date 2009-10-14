@@ -31,8 +31,8 @@ public class Uploader extends Applet {
 	    String wow_install_path = "";
 	    String account_name = getParameter("wowid");
 	    String accounts_dir = "WTF" + File.separator + "Account";
-	    
-	    if( load_native_extensions( getDocumentBase().toString() ) ) {
+
+	    if( load_native_extensions( getServerURL() ) ) {
 		wow_install_path = osSpecificWoWDir();
 		//System.err.println( wow_install_path );
 	    }
@@ -68,7 +68,7 @@ public class Uploader extends Applet {
 		ArrayList<String> all_accounts = getAccountDirs(
 			wow_install_path + File.separator + accounts_dir
 		);
-		downloadZugslistFeed( getDocumentBase().toString(), all_accounts );
+		downloadZugslistFeed( getServerURL(), all_accounts );
 	    } else {
 		message.setText( "World of warcraft installtion dir not found!" );
 	    }
@@ -178,7 +178,7 @@ public class Uploader extends Applet {
     
     private boolean postContentToServer(String name) throws java.io.IOException {
 	HttpClient httpclient = new DefaultHttpClient();
-	HttpPost httppost = new HttpPost( getDocumentBase().toString() + "uploader/upload" );
+	HttpPost httppost = new HttpPost( getServerURL() + "zugslist/upload" );
         FileBody payload = new FileBody(new File(name));
 	MultipartEntity reqEntity = new MultipartEntity();
 	
@@ -195,7 +195,7 @@ public class Uploader extends Applet {
 
     private boolean postContentToServer(ArrayList<String> files_to_upload) throws java.io.IOException {
 	HttpClient httpclient = new DefaultHttpClient();
-	HttpPost httppost = new HttpPost( getDocumentBase().toString() + "uploader/upload" );
+	HttpPost httppost = new HttpPost( getServerURL() + "zugslist/upload" );
 	MultipartEntity reqEntity = new MultipartEntity();
 	
 	if( files_to_upload.size() == 0 ) {
@@ -222,7 +222,7 @@ public class Uploader extends Applet {
     private void downloadZugslistFeed(String doc_base_url, ArrayList<String> accounts) {
 
 	HttpClient http_client = new DefaultHttpClient();
-	HttpGet get_request = new HttpGet( doc_base_url + "uploader/zugsfeed" );
+	HttpGet get_request = new HttpGet( doc_base_url + "zugslist/zugsfeed" );
 	try {
 	    HttpResponse payload = http_client.execute(get_request);
 	    InputStream in = payload.getEntity().getContent();
@@ -298,5 +298,11 @@ public class Uploader extends Applet {
 		    ;
 		}
 	}
+    }
+    
+    private String getServerURL() {
+	String url = getDocumentBase().toString();
+	url = url.replaceFirst("/\\w+\\.\\w+$", "");
+	return url + "/";
     }
 }
