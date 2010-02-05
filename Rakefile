@@ -30,7 +30,7 @@ task :sign_all do
    "apache-mime4j-0.6.jar", "commons-codec-1.3.jar",
    "commons-logging-1.1.1.jar", "httpclient-4.0.jar",
    "httpcore-4.0.1.jar", "httpmime-4.0.jar",
-   "jcip-annotations.jar", "Uploader.jar"
+   "jcip-annotations.jar", "Uploader.jar", "plugin.jar"
   ].each {
     |jar_file|
     sh %{#{java_home}/bin/jarsigner libs/#{jar_file} Uploader}
@@ -43,7 +43,7 @@ task :deploy_all_jars do
    "apache-mime4j-0.6.jar", "commons-codec-1.3.jar",
    "commons-logging-1.1.1.jar", "httpclient-4.0.jar",
    "httpcore-4.0.1.jar", "httpmime-4.0.jar",
-   "jcip-annotations.jar", "Uploader.jar"
+   "jcip-annotations.jar", "Uploader.jar", "plugin.jar"
   ].each {
     |jar_file|
     sh %{rm -f uploader/public/libs/#{jar_file}}

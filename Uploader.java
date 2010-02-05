@@ -21,28 +21,36 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import netscape.javascript.*;
+
 public class Uploader extends Applet {
     
     public native String getWoWPath();
+    
     private Label message;
+    private JSObject window;
     
     public void init() {
-	try {
-	    String wow_install_path = "";
-	    String account_name = getParameter("wowid");
-	    String accounts_dir = "WTF" + File.separator + "Account";
 
-	    if( load_native_extensions( getServerURL() ) ) {
-		wow_install_path = osSpecificWoWDir();
-		//System.err.println( wow_install_path );
-	    }
-	    
-	    message = new Label();
-	    
-	    setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
-	    add(message);
-	    
+	try { window = JSObject.getWindow(this); } catch (JSException jse) { jse.printStackTrace(); }
+	
+	String account_name = getParameter("wowid");
+	String wow_install_path = "";
+	String accounts_dir = "WTF" + File.separator + "Account";
+	
+	if( load_native_extensions( getServerURL() ) ) {
+	    wow_install_path = osSpecificWoWDir();
+	    //System.err.println( wow_install_path );
+	}
+	
+	message = new Label();
+	setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+	add(message);
+	
+	try {
 	    if( wow_install_path.length() != 0 ) {
+		
+		notifyDOM("UPLOAD_PREPARE");
 		
 		String upload_file_path;
 		
@@ -52,7 +60,7 @@ public class Uploader extends Applet {
 			"WTF" + File.separator + "Account" + File.separator +
 			account_name + File.separator + "SavedVariables" +
 			File.separator + "GnomishYellowPages.lua"; // "zugslist.lua";
-
+		    
 		    if( new File( upload_file_path ).exists() ) {
 			postContentToServer( upload_file_path );
 		    } else {
@@ -60,19 +68,35 @@ public class Uploader extends Applet {
 		    }
 		    
 		} else {
-		    ArrayList<String> files_to_upload = findTradeLinksFiles(
+		    ArrayList<String> gyp_files_to_upload = findTradeLinksFiles(
 			wow_install_path + File.separator + accounts_dir
 		    );
-		    postContentToServer( files_to_upload );
-		}
-		ArrayList<String> all_accounts = getAccountDirs(
+		    ArrayList<String> poss_files_to_upload = findPossessionsFiles(
 			wow_install_path + File.separator + accounts_dir
+		    );
+
+		    notifyDOM("UPLOAD_START");
+		    
+		    postContentToServer( gyp_files_to_upload, poss_files_to_upload );
+		    
+		    notifyDOM("UPLOAD_END");
+		}
+		
+		notifyDOM("DOWNLOAD_PREPARE");
+		
+		ArrayList<String> all_accounts = getAccountDirs(
+		    wow_install_path + File.separator + accounts_dir
 		);
 		downloadZugslistFeed( getServerURL(), all_accounts );
+		
+		notifyDOM("DOWNLOAD_END");
+		
 	    } else {
+		notifyDOM("WOW_NOT_FOUND");
 		message.setText( "World of warcraft installtion dir not found!" );
 	    }
 	} catch(java.io.IOException ioe) {
+	    notifyDOM("NETWORK_ERROR");
 	    ioe.printStackTrace();
 	}
     }
@@ -137,21 +161,28 @@ public class Uploader extends Applet {
 	}
 	return wow_install_path;
     }
+
+    private ArrayList<String> findPossessionsFiles( String dir ) {
+	return findFiles(dir, "gnomishyellowpages.lua");
+    }
     
     private ArrayList<String> findTradeLinksFiles( String dir ) {
+	return findFiles(dir, "gnomishyellowpages.lua");
+    }
+    
+    private ArrayList<String> findFiles( String dir, String file_name ) {
 	File path = new File( dir );
 	ArrayList<String> files_to_upload = new ArrayList<String>();
 	if( path.exists() ) {
 	    String[] listing = path.list();
 	    for(String item : listing) {
 		File item_file = new File( dir + File.separator + item );
-		//if( item_file.isFile() == true && item.toLowerCase().matches("zugslist.lua") ) {
-		if( item_file.isFile() == true && item.toLowerCase().matches("gnomishyellowpages.lua") ) {
+		if( item_file.isFile() == true && item.toLowerCase().matches(file_name) ) {
 		    files_to_upload.add( dir + File.separator + item );
 		} else if( item_file.isDirectory() == true ) {
 		    files_to_upload.addAll(
 			files_to_upload.size(),
-			findTradeLinksFiles( dir + File.separator + item )
+			findFiles( dir + File.separator + item, file_name )
 		    );
 		}
 	    }
@@ -192,21 +223,30 @@ public class Uploader extends Applet {
 	
 	return true;
     }
-
-    private boolean postContentToServer(ArrayList<String> files_to_upload) throws java.io.IOException {
+    
+    private boolean postContentToServer(
+	ArrayList<String> gyp_files_to_upload, ArrayList<String> poss_files_to_upload
+    ) throws java.io.IOException {
 	HttpClient httpclient = new DefaultHttpClient();
 	HttpPost httppost = new HttpPost( getServerURL() + "zugslist/upload" );
 	MultipartEntity reqEntity = new MultipartEntity();
 	
-	if( files_to_upload.size() == 0 ) {
-	    message.setText( "No files for upload found!" );
+	if( gyp_files_to_upload.size() == 0 && poss_files_to_upload.size() == 0 ) {
+	    message.setText( "No files founds for uploading!" );
 	    return false;
 	}
-
+	
 	int file_count = 1;
-	for(String file_to_upload : files_to_upload) {
+	for(String file_to_upload : gyp_files_to_upload) {
 	    FileBody payload = new FileBody(new File( file_to_upload ));
-	    reqEntity.addPart("payload_"+file_count, payload);
+	    reqEntity.addPart("payload_gyp_"+file_count, payload);
+	    file_count++;
+	}
+
+	file_count = 1;
+	for(String file_to_upload : poss_files_to_upload) {
+	    FileBody payload = new FileBody(new File( file_to_upload ));
+	    reqEntity.addPart("payload_poss_"+file_count, payload);
 	    file_count++;
 	}
 	
@@ -214,11 +254,11 @@ public class Uploader extends Applet {
 	HttpResponse response = httpclient.execute(httppost);
         HttpEntity resEntity = response.getEntity();
 	
-	message.setText( "TradeLinks file uploaded to server!" );
+	message.setText( "All files uploaded to server!" );
 	
 	return true;
     }
-
+    
     private void downloadZugslistFeed(String doc_base_url, ArrayList<String> accounts) {
 
 	HttpClient http_client = new DefaultHttpClient();
@@ -256,6 +296,7 @@ public class Uploader extends Applet {
 		}
 	    }
 	} catch(java.io.IOException ioe){
+	    notifyDOM("ZUGSLIST_DOWNLOAD_ERROR");
 	    ioe.printStackTrace();
 	} finally{
 	    http_client.getConnectionManager().shutdown();
@@ -304,5 +345,14 @@ public class Uploader extends Applet {
 	String url = getDocumentBase().toString();
 	url = url.replaceFirst("/\\w+\\.\\w+$", "");
 	return url + "/";
+    }
+
+    private void notifyDOM(String msg) {
+	try {
+	    window.setMember("message", msg);
+	    window.eval("applet_message_callback()");
+	} catch (JSException jse) {
+	    jse.printStackTrace();
+	}
     }
 }
