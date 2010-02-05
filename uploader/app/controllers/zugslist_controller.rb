@@ -1,4 +1,4 @@
-class UploaderController < ApplicationController
+class ZugslistController < ApplicationController
   self.allow_forgery_protection = false
   
   def index
@@ -18,7 +18,7 @@ class UploaderController < ApplicationController
   end
 
   def zugsfeed
-    render :file => RAILS_ROOT + "/public/Zugslist.lua"
+    send_file(RAILS_ROOT + "/public/Zugslist.lua")
   end
-  
+ 
 end
