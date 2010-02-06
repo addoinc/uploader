@@ -77,9 +77,12 @@ public class Uploader extends Applet {
 
 		    notifyDOM("UPLOAD_START");
 		    
-		    postContentToServer( gyp_files_to_upload, poss_files_to_upload );
-		    
-		    notifyDOM("UPLOAD_END");
+		    boolean found_files = postContentToServer( gyp_files_to_upload, poss_files_to_upload );
+		    if( found_files ) {
+			notifyDOM("UPLOAD_END");
+		    } else {
+			notifyDOM("UPLOAD_END_NOFILES");
+		    }
 		}
 		
 		notifyDOM("DOWNLOAD_PREPARE");
