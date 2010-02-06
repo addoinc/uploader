@@ -349,8 +349,7 @@ public class Uploader extends Applet {
 
     private void notifyDOM(String msg) {
 	try {
-	    window.setMember("message", msg);
-	    window.eval("applet_message_callback()");
+	    window.eval("applet_message_callback('" + msg + "')");
 	} catch (JSException jse) {
 	    jse.printStackTrace();
 	}

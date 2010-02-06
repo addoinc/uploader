@@ -1,21 +1,33 @@
 <html>
   <head>
-
     <script language="javascript">
-      var message = "";
-      function applet_message_callback() {
-        var elem = document.getElementById("status");
-        elem.innerHTML = message;
-      }
+      function applet_message_callback(message) {
+        var elem = parent.document.getElementById("status");
+
+        if( message == "UPLOAD_PREPARE" ) {
+          parent.document.getElementById("up_ico").style.backgroundImage = "url('/images/loading.gif')";
+        } else if ( message == "UPLOAD_START" ) {
+          parent.document.getElementById("up_ico").style.backgroundImage = "url('/images/tick.png')";
+          parent.document.getElementById("us_ico").style.backgroundImage = "url('/images/loading.gif')";
+        } else if( message == "UPLOAD_END" ) {
+          parent.document.getElementById("us_ico").style.backgroundImage = "url('/images/tick.png')";
+          parent.document.getElementById("ue_ico").style.backgroundImage = "url('/images/loading.gif')";
+        } else if ( message == "DOWNLOAD_PREPARE" ) {
+          parent.document.getElementById("ue_ico").style.backgroundImage = "url('/images/tick.png')";
+          parent.document.getElementById("ds_ico").style.backgroundImage = "url('/images/loading.gif')";
+          parent.document.getElementById("de_ico").style.backgroundImage = "url('/images/loading.gif')";
+        } else if ( message == "DOWNLOAD_END" ) {
+          parent.document.getElementById("ds_ico").style.backgroundImage = "url('/images/tick.png')";
+          parent.document.getElementById("de_ico").style.backgroundImage = "url('/images/tick.png')";
+
+        }
+       }
     </script>
 
   </head>
 
   <body>
-
     <applet code="Uploader.class" MAYSCRIPT archive="/libs/Uploader.jar?v=2,/libs/apache-mime4j-0.6.jar,/libs/commons-logging-1.1.1.jar,/libs/httpcore-4.0.1.jar,/libs/jcip-annotations.jar,/libs/commons-codec-1.3.jar,/libs/httpclient-4.0.jar,/libs/httpmime-4.0.jar,/libs/plugin.jar" width=250 height=60>
     </applet>
-    <div id="status" style="width: 250px; height: 60px; border: 1px solid black; text-align: center;"></div>
-    
   </body>
 </html>

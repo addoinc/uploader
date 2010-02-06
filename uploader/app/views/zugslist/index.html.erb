@@ -1,7 +1,62 @@
 <html>
   <head>
+    <style>
+      #syncer { width: 610px; }
+      #syncer #applet_frame { height: 80px; width: 300px; border: 1px solid black; float: right; clear: none; }
+      #syncer #status { width: 300px; border: 1px solid black; text-align: left; }
+      #syncer #status .status_msg { font-size: 80%; }
+      #syncer #status .status_msg .status_ico {
+        background-image: url('');
+        background-repeat:no-repeat; background-position:right;
+        height: 16px; width: 16px; clear: none; float: left;
+      }
+    </style>
   </head>
   <body>
-    <iframe src="/applet.html" />
+
+    <div id="syncer">
+
+      <iframe id="applet_frame" src="/applet.html">
+      </iframe>
+
+      <div id="status">
+
+	<span id="upload_prepare" class="status_msg">
+	  <div id="up_ico" class="status_ico"></div>
+	  &nbsp; - &nbsp; Preparing to upload GYP data
+	</span>
+
+	<br />
+
+	<span id="upload_start" class="status_msg">
+	  <div id="us_ico" class="status_ico"></div>
+	  &nbsp; - &nbsp; Starting GYP data upload
+        </span>
+
+	<br />
+
+	<span id="upload_end" class="status_msg">
+	  <div id="ue_ico" class="status_ico"></div>
+	  &nbsp; - &nbsp; Completeing GYP data upload
+        </span>
+
+	<br />
+
+	<span id="download_start" class="status_msg">
+	  <div id="ds_ico" class="status_ico"></div>
+	  &nbsp; - &nbsp; Startig Zugslist data download
+        </span>
+
+	<br />
+
+	<span id="download_end" class="status_msg">
+	  <div id="de_ico" class="status_ico"></div>
+	  &nbsp; - &nbsp; Completeing Zugslist data download
+        </span>
+	
+      </div>
+      
+    </div>
+
   </body>
 </html>
