@@ -1,5 +1,5 @@
 
-ZLData = {
+Data = {
 	["Akama-Alliance"] = {
 		["Jewelcrafting"] = {
 			["Killaseason"] = {

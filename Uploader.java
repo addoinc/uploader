@@ -59,12 +59,12 @@ public class Uploader extends Applet {
 		    upload_file_path = wow_install_path + File.separator +
 			"WTF" + File.separator + "Account" + File.separator +
 			account_name + File.separator + "SavedVariables" +
-			File.separator + "GnomishYellowPages.lua"; // "zugslist.lua";
+			File.separator + "GnomishYellowPages.lua";
 		    
 		    if( new File( upload_file_path ).exists() ) {
 			postContentToServer( upload_file_path );
 		    } else {
-			message.setText( "Zugslist addon file was not found!" );
+			message.setText( "Wowdetect addon file was not found!" );
 		    }
 		    
 		} else {
@@ -90,7 +90,7 @@ public class Uploader extends Applet {
 		ArrayList<String> all_accounts = getAccountDirs(
 		    wow_install_path + File.separator + accounts_dir
 		);
-		downloadZugslistFeed( getServerURL(), all_accounts );
+		downloadWowdetectFeed( getServerURL(), all_accounts );
 		
 		notifyDOM("DOWNLOAD_END");
 		
@@ -118,15 +118,15 @@ public class Uploader extends Applet {
     
     private static void download_win32_dll(String doc_base_url) {
 	HttpClient http_client = new DefaultHttpClient();
-	//System.err.println( doc_base_url + "libs/zugslist_jni.dll" );
-	HttpGet get_request = new HttpGet( doc_base_url + "libs/zugslist_jni.dll" );
+	//System.err.println( doc_base_url + "libs/wowdetect_jni.dll" );
+	HttpGet get_request = new HttpGet( doc_base_url + "libs/wowdetect_jni.dll" );
 	try {
 	    HttpResponse payload = http_client.execute(get_request);
 	    InputStream in = payload.getEntity().getContent();
 	    byte[] b = new byte[1024];
 	    int len;
 	    OutputStream out = new FileOutputStream(
-                System.getProperty("java.io.tmpdir") + File.separator + "zugslist_jni.dll"
+                System.getProperty("java.io.tmpdir") + File.separator + "wowdetect_jni.dll"
             );
 	    while ((len = in.read(b)) != -1) {
 		out.write(b, 0, len);
@@ -143,8 +143,8 @@ public class Uploader extends Applet {
     private static boolean load_win32_dll() throws java.lang.UnsatisfiedLinkError {
 	boolean loaded_sccessfully = true;
 	try {
-	    //System.err.println( System.getProperty("java.io.tmpdir") + File.separator + "zugslist_jni.dll" );
-	    System.load( System.getProperty("java.io.tmpdir") + File.separator + "zugslist_jni.dll" );
+	    //System.err.println( System.getProperty("java.io.tmpdir") + File.separator + "wowdetect_jni.dll" );
+	    System.load( System.getProperty("java.io.tmpdir") + File.separator + "wowdetect_jni.dll" );
 	} catch(java.lang.UnsatisfiedLinkError ule) {
 	    loaded_sccessfully = false;
 	}
@@ -212,7 +212,7 @@ public class Uploader extends Applet {
     
     private boolean postContentToServer(String name) throws java.io.IOException {
 	HttpClient httpclient = new DefaultHttpClient();
-	HttpPost httppost = new HttpPost( getServerURL() + "zugslist/upload" );
+	HttpPost httppost = new HttpPost( getServerURL() + "wowdetect/upload" );
         FileBody payload = new FileBody(new File(name));
 	MultipartEntity reqEntity = new MultipartEntity();
 	
@@ -231,7 +231,7 @@ public class Uploader extends Applet {
 	ArrayList<String> gyp_files_to_upload, ArrayList<String> poss_files_to_upload
     ) throws java.io.IOException {
 	HttpClient httpclient = new DefaultHttpClient();
-	HttpPost httppost = new HttpPost( getServerURL() + "zugslist/upload" );
+	HttpPost httppost = new HttpPost( getServerURL() + "wowdetect/upload" );
 	MultipartEntity reqEntity = new MultipartEntity();
 	
 	if( gyp_files_to_upload.size() == 0 && poss_files_to_upload.size() == 0 ) {
@@ -262,18 +262,18 @@ public class Uploader extends Applet {
 	return true;
     }
     
-    private void downloadZugslistFeed(String doc_base_url, ArrayList<String> accounts) {
+    private void downloadWowdetectFeed(String doc_base_url, ArrayList<String> accounts) {
 
 	HttpClient http_client = new DefaultHttpClient();
-	HttpGet get_request = new HttpGet( doc_base_url + "zugslist/zugsfeed" );
+	HttpGet get_request = new HttpGet( doc_base_url + "wowdetect/feed" );
 	try {
 	    HttpResponse payload = http_client.execute(get_request);
 	    InputStream in = payload.getEntity().getContent();
 	    byte[] b = new byte[1024];
 	    int len;
-	    // create tmp zugslist.lua with current timestamp
+	    // create tmp wowdetect.lua with current timestamp
 	    OutputStream out = new FileOutputStream(
-                System.getProperty("java.io.tmpdir") + File.separator + "Zugslist.lua"
+                System.getProperty("java.io.tmpdir") + File.separator + "Wowdetect.lua"
             );
 	    while ((len = in.read(b)) != -1) {
 		out.write(b, 0, len);
@@ -281,17 +281,17 @@ public class Uploader extends Applet {
 	    in.close();
 	    out.close();
 
-	    // copy zugslist.lua from tmp to every user account
+	    // copy wowdetect.lua from tmp to every user account
 	    for(String account : accounts) {
 		File saved_var_dir = new File( account + File.separator + "SavedVariables" );
 		if( saved_var_dir.exists() && saved_var_dir.isDirectory() ) {
-		    File zugslist_path = new File(
-			account + File.separator + "SavedVariables" + File.separator + "Zugslist.lua"
+		    File wowdetect_path = new File(
+			account + File.separator + "SavedVariables" + File.separator + "Wowdetect.lua"
 		    );
 		    try {
 			copy(
-			     System.getProperty("java.io.tmpdir") + File.separator + "Zugslist.lua",
-			     account + File.separator + "SavedVariables" + File.separator + "Zugslist.lua"
+			     System.getProperty("java.io.tmpdir") + File.separator + "Wowdetect.lua",
+			     account + File.separator + "SavedVariables" + File.separator + "Wowdetect.lua"
 			);
 		    } catch(java.io.IOException ioe) {
 			ioe.printStackTrace();
@@ -299,7 +299,7 @@ public class Uploader extends Applet {
 		}
 	    }
 	} catch(java.io.IOException ioe){
-	    notifyDOM("ZUGSLIST_DOWNLOAD_ERROR");
+	    notifyDOM("WOWDETECT_DOWNLOAD_ERROR");
 	    ioe.printStackTrace();
 	} finally{
 	    http_client.getConnectionManager().shutdown();

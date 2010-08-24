@@ -1,4 +1,4 @@
-class ZugslistController < ApplicationController
+class WowdetectController < ApplicationController
   self.allow_forgery_protection = false
   
   def index
@@ -17,8 +17,8 @@ class ZugslistController < ApplicationController
     render :text => "OK"
   end
 
-  def zugsfeed
-    send_file(RAILS_ROOT + "/public/Zugslist.lua")
+  def feed
+    send_file(RAILS_ROOT + "/public/WOW_LUA_ADDON.lua")
   end
  
 end

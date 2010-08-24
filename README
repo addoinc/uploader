@@ -9,9 +9,9 @@
   rake sign_all
   rake deploy_all_jars
 
-Finally, copy zugslist_jni.dll in to uploader/public/libs/
-This dll is avaiable in the zldll git repo and has the sum: 51473    15
-$ sum zugslist_jni.dll
+Finally, copy wowdetect_jni.dll in to uploader/public/libs/
+This dll is avaiable in the wddll git repo and has the sum: 51473    15
+$ sum wowdetect_jni.dll
 51473    15
 $
 
